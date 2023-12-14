@@ -10236,12 +10236,12 @@ a:focus {
   overflow-x: hidden;
 }
 
-/* my css */
+/* my css 
 #wrapper #content-wrapper.bg-layout {
   background-color: #4c71dd;
   width: 100%;
   overflow-x: hidden;
-}
+}*/
 
 #wrapper #content-wrapper #content {
   flex: 1 0 auto;
@@ -10348,6 +10348,7 @@ a:focus {
   background-color: #4e73df;
   background-image: linear-gradient(180deg, #4e73df 10%, #224abe 100%);
   background-size: cover;
+  /*height: 530px;  my css */
 }
 
 .bg-gradient-secondary {

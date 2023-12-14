@@ -8,7 +8,7 @@ const baseUrl = "https://localhost:7093/api/";
 //#region Global-API's
 export const getById = createAsyncThunk(
   "user/getById",
-  async (url, { rejectWithValue, getState, dispatch }) => {
+  async (endPoint, { rejectWithValue, getState, dispatch }) => {
     const users = getState()?.authentication?.userAuth;
     const config = {
       headers: {
@@ -18,7 +18,7 @@ export const getById = createAsyncThunk(
     };
 
     try {
-      const response = await axios.get(`${baseUrl}${url}`, config);
+      const response = await axios.get(`${baseUrl}${endPoint}`, config);
       const responseBack = getResponse(response, dispatch, users);
       return responseBack;
     } catch (error) {
@@ -76,6 +76,30 @@ export const addCompany = createAsyncThunk(
       if (response?.data?.status) {
         toast.success(response?.data?.message);
       }
+    } catch (error) {
+      handleApiError(error?.response?.data, dispatch, user);
+    }
+  }
+);
+
+export const companyListDropdown = createAsyncThunk(
+  "user/companyListDropdown",
+  async (_, { rejectWithValue, getState, dispatch }) => {
+    const user = getState()?.authentication?.userAuth;
+    const config = {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${user?.token}`,
+      },
+    };
+
+    try {
+      const response = await axios.get(
+        `${baseUrl}Admin/GetCompanyList`,
+        config
+      );
+      const responseBack = getResponse(response, dispatch, user);
+      return responseBack;
     } catch (error) {
       handleApiError(error?.response?.data, dispatch, user);
     }
@@ -270,7 +294,11 @@ export const addUser = createAsyncThunk(
     formData.append("gender", users.gender);
     formData.append("role", 3);
     formData.append("dob", users.dob);
+    formData.append("employeeId", users.employeeId);
+    formData.append("companyId", users.companyId);
     formData.append("profilePicture", users.profilePicture);
+    formData.append("cnicFrontScan", users.cnicFrontScan);
+    formData.append("cnicBackScan", users.cnicBackScan);
     const config = {
       headers: {
         Authorization: `Bearer ${user.token}`,
@@ -371,6 +399,28 @@ const adminSlices = createSlice({
       state.profileServerErr = undefined;
     });
     builder.addCase(companyList.rejected, (state, action) => {
+      state.appErr = action?.payload?.message;
+      state.loading = false;
+      state.serverErr = undefined;
+      state.appStatus = action?.payload?.status;
+      state.appStatusCode = action?.payload?.statusCode;
+    });
+
+    builder.addCase(companyListDropdown.pending, (state, action) => {
+      state.loading = true;
+      state.appStatusCode = undefined;
+      state.profileAppErr = undefined;
+      state.profileAppErr = undefined;
+      state.profileServerErr = undefined;
+    });
+    builder.addCase(companyListDropdown.fulfilled, (state, action) => {
+      state.loading = false;
+      state.appStatus = false;
+      state.appStatusCode = undefined;
+      state.profileAppErr = undefined;
+      state.profileServerErr = undefined;
+    });
+    builder.addCase(companyListDropdown.rejected, (state, action) => {
       state.appErr = action?.payload?.message;
       state.loading = false;
       state.serverErr = undefined;

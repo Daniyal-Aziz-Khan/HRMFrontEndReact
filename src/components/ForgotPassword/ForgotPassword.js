@@ -75,11 +75,11 @@ function ForgotPassword() {
                         </button>
                       </form>
                       <hr />
-                      <div className="text-center">
+                      {/* <div className="text-center">
                         <NavLink className="small" to="/register">
                           Create an Account!
                         </NavLink>
-                      </div>
+                      </div> */}
                       <div className="text-center">
                         <NavLink className="small" to="/">
                           Already have an account? Login!

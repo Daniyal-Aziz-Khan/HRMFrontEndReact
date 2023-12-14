@@ -98,7 +98,7 @@ function Login() {
                             </small>
                           )}
                         </div>
-                        <div className="form-group">
+                        {/* <div className="form-group">
                           <div className="custom-control custom-checkbox small">
                             <input
                               type="checkbox"
@@ -112,7 +112,7 @@ function Login() {
                               Remember Me
                             </label>
                           </div>
-                        </div>
+                        </div> */}
                         <button
                           type="submit"
                           className="btn btn-primary btn-user btn-block"
@@ -133,7 +133,7 @@ function Login() {
                             <span>Login</span>
                           )}
                         </button>
-                        <hr />
+                        {/* <hr />
                         <button className="btn btn-primary btn-user btn-block">
                           <i className="fab fa-google fa-fw"></i> Login with
                           Google
@@ -141,7 +141,7 @@ function Login() {
                         <button className="btn btn-primary btn-user btn-block">
                           <i className="fab fa-facebook-f fa-fw"></i> Login with
                           Facebook
-                        </button>
+                        </button> */}
                       </form>
                       <hr />
                       <div className="text-center">
@@ -149,11 +149,11 @@ function Login() {
                           Forgot Password?
                         </NavLink>
                       </div>
-                      <div className="text-center">
+                      {/* <div className="text-center">
                         <NavLink className="small" to="/register">
                           Create an Account!
                         </NavLink>
-                      </div>
+                      </div> */}
                     </div>
                   </div>
                 </div>

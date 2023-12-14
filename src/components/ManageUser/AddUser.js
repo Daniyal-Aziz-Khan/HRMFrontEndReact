@@ -1,72 +1,178 @@
 import { useFormik } from "formik";
 import { useDispatch } from "react-redux";
-import { NavLink } from "react-router-dom";
-import { addUser } from "../redux/AdminController";
+import { NavLink, useLocation } from "react-router-dom";
+import { addUser, companyListDropdown } from "../redux/AdminController";
 import * as Yup from "yup";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import defaultImageSrc from "../../assets/images/users/user1.jpg";
-
-const initialValues = {
-  firstName: "",
-  lastName: "",
-  userName: "",
-  email: "",
-  password: "",
-  cpassword: "",
-  phoneNumber: "",
-  address: "",
-  dob: "",
-  gender: "Male",
-  profilePicture: null,
-};
-
-const validateAddUser = Yup.object({
-  firstName: Yup.string().min(3).required("Please enter first name"),
-  lastName: Yup.string().min(3).required("Please enter last name"),
-  userName: Yup.string().min(3).required("Please enter user name"),
-  email: Yup.string()
-    // .email("Please enter valid email")
-    .matches(
-      /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}$/,
-      "Please enter a valid email"
-    )
-    .required("Please enter email"),
-  password: Yup.string().min(5).required("Please enter password"),
-  cpassword: Yup.string()
-    .oneOf([Yup.ref("password")], "Password not matched")
-    .required("Please enter password"),
-  phoneNumber: Yup.string()
-    .min(6, "Phone Number must be at leat 6 charactors")
-    .required("Please enter phone number"),
-  dob: Yup.date().required("Please select your date of birth"),
-  gender: Yup.string().required("Please select your gender"),
-  profilePicture: Yup.mixed()
-    .required("Profile picture is required")
-    .test("fileSize", "File size must be less than 2MB", (value) => {
-      if (!value) return true; // No file selected, consider it valid
-      const isFileSizeValid = value.size <= 2 * 1024 * 1024; // 2 MB limit
-
-      if (!isFileSizeValid) {
-        throw new Yup.ValidationError(
-          "File size must be less than 2MB",
-          value,
-          "profilePicture"
-        );
-      }
-
-      return isFileSizeValid;
-    }),
-});
+import defaultImageCNICSrc from "../../assets/images/users/defaultImageCNICSrc.jpg";
+import Spinner from "react-bootstrap/Spinner";
 
 function AddUser() {
   const dispatch = useDispatch();
+  const location = useLocation();
+  const [isUpdateCall, setIsUpdate] = useState(false);
+
+  //#region fetch compnay list
+  const [showSpinner, setShowSpinner] = useState(true);
+  const [companyDropdown, setCompanyDropdown] = useState([]);
+  const fetchCompaniesList = async () => {
+    setShowSpinner(true);
+    try {
+      const response = await dispatch(companyListDropdown());
+
+      if (companyListDropdown.fulfilled.match(response)) {
+        setCompanyDropdown(response?.payload);
+        console.log("company list: ", response?.payload);
+        // const getCompnayDropdown = response?.payload?.list?.map((item) => {
+        //   Check if the column value is null
+        //   if (item && item.profilePicture === "") {
+        //     item.profilePicture = defaultImageSrc;
+        //   }
+        //   return item;
+        // });
+      }
+      setShowSpinner(false);
+    } catch (error) {
+      console.error("Error fetching users:", error);
+    } finally {
+      setShowSpinner(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchCompaniesList();
+  }, []);
+  //#endregion
+
+  const getRecord = location.userRow;
+
+  if (getRecord?.id) {
+    setIsUpdate(true);
+  }
+
+  const initialValues = {
+    companyId: getRecord?.companyId || "",
+    id: getRecord?.id || "",
+    role: getRecord?.role || 3,
+    firstName: getRecord?.firstName || "",
+    lastName: getRecord?.lastName || "",
+    userName: getRecord?.userName || "",
+    email: getRecord?.email || "",
+    password: getRecord?.password || "",
+    cpassword: getRecord?.cpassword || "",
+    phoneNumber: getRecord?.phoneNumber || "",
+    address: getRecord?.address || "",
+    dob: getRecord?.dob || "",
+    employeeId: getRecord?.employeeId || "",
+    gender: getRecord?.gender || "Male",
+    profilePicture: getRecord?.profilePicture || null,
+    cnicFrontScan: getRecord?.cnicFrontScan || null,
+    cnicBackScan: getRecord?.cnicBackScan || null,
+    isUpdate: isUpdateCall,
+  };
+
+  const validateAddUser = Yup.object().shape({
+    isUpdate: Yup.bool().required(),
+    companyId: Yup.string().required("Please select company"),
+    firstName: Yup.string().min(3).required("Please enter first name"),
+    lastName: Yup.string().min(3).required("Please enter last name"),
+    userName: Yup.string().when(["isUpdate"], (isUpdate, schema) => {
+      console.log("idUpdate:", isUpdate);
+      return isUpdate[0]
+        ? schema.optional()
+        : schema.min(3).required("Please enter user name");
+    }),
+    email: Yup.string()
+      // .email("Please enter valid email")
+      .matches(
+        /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}$/,
+        "Please enter a valid email"
+      )
+      .required("Please enter email"),
+    password: Yup.string().when(["isUpdate"], (isUpdate, schema) => {
+      return isUpdate[0]
+        ? schema.optional()
+        : schema.min(3).required("Please enter password");
+    }),
+    cpassword: Yup.string().when(["isUpdate"], (isUpdate, schema) => {
+      return isUpdate[0]
+        ? schema.optional()
+        : schema
+            .oneOf([Yup.ref("password")], "Password not matched")
+            .required("Please enter password");
+    }),
+    phoneNumber: Yup.string()
+      .min(6, "Phone Number must be at leat 6 charactors")
+      .required("Please enter phone number"),
+    dob: Yup.date().required("Please select your date of birth"),
+    employeeId: Yup.string().when(["isUpdate"], (isUpdate, schema) => {
+      return isUpdate[0]
+        ? schema.optional()
+        : schema
+            .min(1, "Employee Id must be at leat 1 digit")
+            .required("Please enter employee id");
+    }),
+    gender: Yup.string().required("Please select your gender"),
+    profilePicture: Yup.mixed()
+      .required("Profile picture is required")
+      .test("fileSize", "File size must be less than 2MB", (value) => {
+        if (!value) return true; // No file selected, consider it valid
+        const isFileSizeValid = value.size <= 2 * 1024 * 1024; // 2 MB limit
+
+        if (!isFileSizeValid) {
+          throw new Yup.ValidationError(
+            "File size must be less than 2MB",
+            value,
+            "profilePicture"
+          );
+        }
+
+        return isFileSizeValid;
+      }),
+    cnicFrontScan: Yup.mixed()
+      .required("CNIC Front Image is required")
+      .test("fileSize", "File size must be less than 2MB", (value) => {
+        if (!value) return true; // No file selected, consider it valid
+        const isFileSizeValid = value.size <= 2 * 1024 * 1024; // 2 MB limit
+
+        if (!isFileSizeValid) {
+          throw new Yup.ValidationError(
+            "File size must be less than 2MB",
+            value,
+            "cnicFrontScan"
+          );
+        }
+        return isFileSizeValid;
+      }),
+    cnicBackScan: Yup.mixed()
+      .required("CNIC Back Image is required")
+      .test("fileSize", "File size must be less than 2MB", (value) => {
+        if (!value) return true; // No file selected, consider it valid
+        const isFileSizeValid = value.size <= 2 * 1024 * 1024; // 2 MB limit
+
+        if (!isFileSizeValid) {
+          throw new Yup.ValidationError(
+            "File size must be less than 2MB",
+            value,
+            "cnicBackScan"
+          );
+        }
+
+        return isFileSizeValid;
+      }),
+  });
 
   const [previewImage, setPreviewImage] = useState(null);
   const fileInputRef = useRef(null);
+  const [previewImageCNICF, setPreviewImageCNICF] = useState(null);
+  const fileInputCNICFRef = useRef(null);
+  const [previewImageCNICB, setPreviewImageCNICB] = useState(null);
+  const fileInputCNICBRef = useRef(null);
 
-  const handleFileChange = (event) => {
+  const handleFileChange = ({ event, name }) => {
     const file = event.currentTarget.files[0];
-
+    console.log(name);
     if (file && file.size <= 2 * 1024 * 1024) {
       // Display the preview of the selected image
       setPreviewImage(URL.createObjectURL(file));
@@ -79,6 +185,34 @@ function AddUser() {
       setFieldValue("profilePicture", null);
       // Clear the file input value
       fileInputRef.current.value = "";
+      alert("File Size exceeds from 2MB");
+    }
+  };
+
+  const handleCNICFileChange = ({ event, name }) => {
+    const file = event.currentTarget.files[0];
+    console.log(name);
+    if (file && file.size <= 2 * 1024 * 1024) {
+      if (name === "cnicFrontScan") {
+        setPreviewImageCNICF(URL.createObjectURL(file));
+      } else if (name === "cnicBackScan") {
+        setPreviewImageCNICB(URL.createObjectURL(file));
+      }
+
+      setFieldValue(name, file);
+    } else {
+      // File size exceeds 2MB, set default image
+      // Update formik values (optional, set to null or handle as needed)
+      setFieldValue(name, null);
+
+      if (name === "cnicFrontScan") {
+        setPreviewImageCNICF(defaultImageCNICSrc);
+        fileInputCNICFRef.current.value = "";
+      } else if (name === "cnicBackScan") {
+        setPreviewImageCNICB(defaultImageCNICSrc);
+        fileInputCNICBRef.current.value = "";
+      }
+
       alert("File Size exceeds from 2MB");
     }
   };
@@ -117,6 +251,65 @@ function AddUser() {
                       <h1 className="h3 text-gray-900 mb-4">Add User</h1>
                     </div>
                     <form className="user" onSubmit={handleSubmit}>
+                      <div className="form-group col-lg-12">
+                        <label
+                          className="form-label ml-1 text-bold"
+                          htmlFor="exampleInputSComp"
+                        >
+                          Select Compnay
+                          {showSpinner && (
+                            <span>
+                              <Spinner
+                                as="span"
+                                animation="border"
+                                size="sm"
+                                role="status"
+                                aria-hidden="true"
+                              />
+                            </span>
+                          )}
+                        </label>
+                        <select
+                          disabled={showSpinner}
+                          className="form-control"
+                          id="exampleInputSComp"
+                          value={values.companyId}
+                          onBlur={handleBlur("companyId")}
+                          onChange={handleChange("companyId")}
+                        >
+                          <option
+                            selected={isUpdateCall ? false : true}
+                            disabled="true"
+                            value=""
+                          >
+                            Select Company
+                          </option>
+                          {companyDropdown &&
+                            companyDropdown.map((item) => (
+                              <option
+                                key={item.id}
+                                value={item.id}
+                                selected={values.companyId === item.id}
+                              >
+                                {item.companyName}
+                              </option>
+                            ))}
+                        </select>
+                        {/* <input
+                          type="text"
+                          className="form-control form-control-user"
+                          id="exampleInputSComp"
+                          value={values.companyId}
+                          onBlur={handleBlur("companyId")}
+                          onChange={handleChange("companyId")}
+                        /> */}
+                        {errors.companyId && (
+                          <small className="text-danger">
+                            {errors.companyId}
+                          </small>
+                        )}
+                      </div>
+
                       <div className="form-group col-lg-12">
                         <label
                           className="form-label ml-1 text-bold"
@@ -172,6 +365,7 @@ function AddUser() {
                         </label>
                         <input
                           type="text"
+                          readOnly={isUpdateCall}
                           className="form-control form-control-user"
                           id="exampleInputUserName"
                           placeholder="Enter User Name"
@@ -196,6 +390,7 @@ function AddUser() {
                         <input
                           className="form-control form-control-user"
                           type="email"
+                          readOnly={isUpdateCall}
                           id="exampleInputEmail"
                           aria-describedby="emailHelp"
                           placeholder="Enter Email Address..."
@@ -208,7 +403,10 @@ function AddUser() {
                         )}
                       </div>
 
-                      <div className="form-group col-lg-12">
+                      <div
+                        className="form-group col-lg-12"
+                        style={{ display: isUpdateCall ? "none" : "block" }}
+                      >
                         <label
                           className="form-label ml-1 text-bold"
                           htmlFor="exampleInputPassword"
@@ -231,7 +429,10 @@ function AddUser() {
                         )}
                       </div>
 
-                      <div className="form-group col-lg-12">
+                      <div
+                        className="form-group col-lg-12"
+                        style={{ display: isUpdateCall ? "none" : "block" }}
+                      >
                         <label
                           className="form-label ml-1 text-bold"
                           htmlFor="exampleInputCPassword"
@@ -290,6 +491,8 @@ function AddUser() {
                           id="exampleInputAddress"
                           placeholder="Enter Address"
                           value={values.address}
+                          onBlur={handleBlur("address")}
+                          onChange={handleChange("address")}
                         />
                       </div>
 
@@ -310,6 +513,29 @@ function AddUser() {
                         />
                         {errors.dob && (
                           <small className="text-danger">{errors.dob}</small>
+                        )}
+                      </div>
+
+                      <div className="form-group col-lg-12">
+                        <label
+                          className="form-label ml-1 text-bold"
+                          htmlFor="exampleInputEmployeeId"
+                        >
+                          Employee Id
+                        </label>
+                        <input
+                          type="text"
+                          className="form-control form-control-user"
+                          id="exampleInputEmployeeId"
+                          placeholder="Enter Employee Id"
+                          value={values.employeeId}
+                          onBlur={handleBlur("employeeId")}
+                          onChange={handleChange("employeeId")}
+                        />
+                        {errors.employeeId && (
+                          <small className="text-danger">
+                            {errors.employeeId}
+                          </small>
                         )}
                       </div>
 
@@ -371,7 +597,12 @@ function AddUser() {
                               className="form-control"
                               id="exampleInputPP"
                               ref={fileInputRef}
-                              onChange={handleFileChange}
+                              onChange={(event) =>
+                                handleFileChange({
+                                  event,
+                                  name: "profilePicture",
+                                })
+                              }
                             />
                             {errors.profilePicture && (
                               <small className="text-danger">
@@ -383,18 +614,6 @@ function AddUser() {
                             className="col-lg-4"
                             style={{ textAlign: "center" }}
                           >
-                            {/* {selectedImages && selectedImages.length > 0 ? (
-                              selectedImages.map((image, index) => (
-                                <img
-                                  key={index}
-                                  src={URL.createObjectURL(image)}
-                                  className="rounded-circle m-2"
-                                  width={100}
-                                  height={100}
-                                  alt={`Selected ${index + 1}`}
-                                />
-                              ))
-                            ) : ( */}
                             <img
                               src={
                                 previewImage ||
@@ -407,15 +626,107 @@ function AddUser() {
                               height={100}
                               alt="user-profile"
                             />
-                            {/* )} */}
                           </div>
                         </div>
-
-                        {/* {errors.dob && (
-                          <small className="text-danger">{errors.dob}</small>
-                        )} */}
                       </div>
 
+                      <div className="form-group col-lg-12">
+                        <div className="row">
+                          <div className="col-lg-8">
+                            <label
+                              className="form-label ml-1 text-bold"
+                              htmlFor="exampleInputFCNIC"
+                            >
+                              CNIC Front Image
+                            </label>
+                            <input
+                              type="file"
+                              accept="image/*"
+                              className="form-control"
+                              id="exampleInputFCNIC"
+                              ref={fileInputCNICFRef}
+                              onChange={(event) =>
+                                handleCNICFileChange({
+                                  event,
+                                  name: "cnicFrontScan",
+                                })
+                              }
+                            />
+                            {errors.cnicFrontScan && (
+                              <small className="text-danger">
+                                {errors.cnicFrontScan}
+                              </small>
+                            )}
+                          </div>
+                          <div
+                            className="col-lg-4"
+                            style={{ textAlign: "center" }}
+                          >
+                            <img
+                              src={
+                                previewImageCNICF ||
+                                (values.cnicFrontScan
+                                  ? URL.createObjectURL(values.cnicFrontScan)
+                                  : defaultImageCNICSrc)
+                              }
+                              className="rounded-circle"
+                              width={100}
+                              height={100}
+                              alt="user-profile"
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="form-group col-lg-12">
+                        <div className="row">
+                          <div className="col-lg-8">
+                            <label
+                              className="form-label ml-1 text-bold"
+                              htmlFor="exampleInputBCNIC"
+                            >
+                              CNIC Back Image
+                            </label>
+                            <input
+                              type="file"
+                              accept="image/*"
+                              className="form-control"
+                              id="exampleInputBCNIC"
+                              ref={fileInputCNICBRef}
+                              onChange={(event) =>
+                                handleCNICFileChange({
+                                  event,
+                                  name: "cnicBackScan",
+                                })
+                              }
+                            />
+                            {errors.cnicBackScan && (
+                              <small className="text-danger">
+                                {errors.cnicBackScan}
+                              </small>
+                            )}
+                          </div>
+                          <div
+                            className="col-lg-4"
+                            style={{ textAlign: "center" }}
+                          >
+                            <img
+                              src={
+                                previewImageCNICB ||
+                                (values.cnicBackScan
+                                  ? URL.createObjectURL(values.cnicBackScan)
+                                  : defaultImageCNICSrc)
+                              }
+                              className="rounded-circle"
+                              width={100}
+                              height={100}
+                              alt="user-profile"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                      <input type="hidden" value={values.id} />
+                      <input type="hidden" value={values.role} />
                       <button
                         type="submit"
                         className="btn btn-primary btn-user btn-block"
@@ -423,12 +734,6 @@ function AddUser() {
                         Add User
                       </button>
                       <hr />
-                      {/* <a
-                          href="index.html"
-                          className="btn btn-primary btn-user btn-block"
-                        >
-                          Back To List
-                        </a> */}
                       <NavLink
                         className="btn btn-primary btn-user btn-block"
                         to="/user-list"

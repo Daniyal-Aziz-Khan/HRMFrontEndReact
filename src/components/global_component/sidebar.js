@@ -155,6 +155,37 @@ const Sidebar = () => {
         {/* Heading */}
         {/* <div className="sidebar-heading">Addons</div> */}
 
+        {/* Nav Item - Add Company Collapse Menu */}
+        <li className="nav-item">
+          <a
+            className="nav-link collapsed"
+            href="/"
+            data-toggle="collapse"
+            data-target="#collapseMCompany"
+            aria-expanded="true"
+            aria-controls="collapseMCompany"
+          >
+            <i className="fas fa-fw fa-user"></i>
+            <span>Manage Compnay</span>
+          </a>
+          <div
+            id="collapseMCompany"
+            className="collapse"
+            aria-labelledby="headingMCompany"
+            data-parent="#accordionSidebar"
+          >
+            <div className="bg-white py-2 collapse-inner rounded">
+              <NavLink className="collapse-item" to="add-company">
+                Add Company
+              </NavLink>
+              <div className="collapse-divider"></div>
+              <NavLink className="collapse-item" to="company-list">
+                Company List
+              </NavLink>
+            </div>
+          </div>
+        </li>
+
         {/* Nav Item - User Collapse Menu */}
         <li className="nav-item">
           <a

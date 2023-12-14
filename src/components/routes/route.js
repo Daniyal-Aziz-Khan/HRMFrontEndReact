@@ -8,6 +8,8 @@ import {
 // pages
 import Dashboard from "../global_component/DashBoard";
 import NotFound from "../ErrorPages/NotFound";
+import AddCompany from "../ManageCompany/AddCompany";
+import CompanyList from "../ManageCompany/CompanyList";
 import AddUser from "../ManageUser/AddUser";
 import EditUser from "../ManageUser/EditUser";
 import UserList from "../ManageUser/UserList";
@@ -31,6 +33,8 @@ const getRouter = createBrowserRouter(
       <Route element={<ProtectedLayout />}>
         <Route element={<RootLayout />}>
           <Route path="home" element={<Dashboard />} />
+          <Route path="add-company" element={<AddCompany />} />
+          <Route path="company-list" element={<CompanyList />} />
           <Route path="add-user" element={<AddUser />} />
           <Route path="update-user" element={<EditUser />} />
           <Route path="user-list" element={<UserList />} />

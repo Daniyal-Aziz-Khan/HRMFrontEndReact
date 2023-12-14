@@ -15,7 +15,7 @@ function AuthLayout() {
             </div> */}
             {/* End of Page Content */}
           </div>
-          {/* <Footer /> */}
+          <Footer />
         </div>
       </div>
     </>
