@@ -2,14 +2,13 @@ import { NavLink, Navigate } from "react-router-dom";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { useDispatch, useSelector } from "react-redux";
-import { postCompanyLogin } from "../redux/AuthController";
+import { postLogin } from "../redux/AuthController";
 import Spinner from "react-bootstrap/Spinner";
 import { useState } from "react";
 
 const initialValues = {
   email: "",
   password: "",
-  companyName: "",
 };
 
 const validateLogin = Yup.object().shape({
@@ -21,10 +20,9 @@ const validateLogin = Yup.object().shape({
     )
     .required("Please enter email"),
   password: Yup.string().min(3).required("Please enter password"),
-  companyName: Yup.string().required("Please enter company name"),
 });
 
-function Login() {
+function AdminLogin() {
   const [showSpinner, setSpinner] = useState(false);
 
   const dispatch = useDispatch();
@@ -34,7 +32,7 @@ function Login() {
     onSubmit: (values) => {
       console.log(values);
       try {
-        dispatch(postCompanyLogin(values));
+        dispatch(postLogin(values));
         setSpinner(true);
       } catch (error) {
         console.log("login-page api call error: " + error);
@@ -51,6 +49,7 @@ function Login() {
   }
 
   return (
+    //style={{ height: "534px" }}
     <div className="bg-gradient-primary">
       <div className="container">
         {/* Outer Row */}
@@ -67,22 +66,6 @@ function Login() {
                         <h1 className="h4 text-gray-900 mb-4">Welcome Back!</h1>
                       </div>
                       <form className="user" onSubmit={handleSubmit}>
-                        <div className="form-group">
-                          <input
-                            type="text"
-                            className="form-control form-control-user"
-                            id="exampleInputCompanyName"
-                            placeholder="Enter Company Name"
-                            value={values.companyName}
-                            onBlur={handleBlur("companyName")}
-                            onChange={handleChange("companyName")}
-                          />
-                          {errors.companyName && (
-                            <small className="text-danger">
-                              {errors.companyName}
-                            </small>
-                          )}
-                        </div>
                         <div className="form-group">
                           <input
                             type="email"
@@ -161,12 +144,12 @@ function Login() {
                           Facebook
                         </button> */}
                       </form>
-                      <hr />
+                      {/* <hr />
                       <div className="text-center">
                         <NavLink className="small" to="/forgot-password">
                           Forgot Password?
                         </NavLink>
-                      </div>
+                      </div> */}
                       {/* <div className="text-center">
                         <NavLink className="small" to="/register">
                           Create an Account!
@@ -184,4 +167,4 @@ function Login() {
   );
 }
 
-export default Login;
+export default AdminLogin;

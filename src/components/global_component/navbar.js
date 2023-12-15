@@ -2,6 +2,7 @@ import { Component, useState } from "react";
 import CustomModal from "./CustomModal";
 import { useDispatch, useSelector } from "react-redux";
 import { logoutAction } from "../redux/AuthController";
+import { NavLink } from "react-router-dom";
 
 function Navbar() {
   const [showModal, setShowModal] = useState(false);
@@ -33,10 +34,18 @@ function Navbar() {
                 type="text"
                 className="form-control bg-light border-0 small"
               >
-                Welcome,{" "}
-                <b>
-                  {userAuth.firstName} {userAuth.lastName}
-                </b>
+                {userAuth.companyName ? (
+                  <>
+                    <b>{userAuth.companyName}</b>
+                  </>
+                ) : (
+                  <>
+                    Welcome,{" "}
+                    <b>
+                      {userAuth.firstName} {userAuth.lastName}
+                    </b>
+                  </>
+                )}
               </span>
             )}
 
@@ -231,11 +240,15 @@ function Navbar() {
               aria-expanded="false"
             >
               <span className="mr-2 d-none d-lg-inline text-gray-600 small">
-                Douglas McGee
+                {userAuth.firstName} {userAuth.lastName}
               </span>
               <img
                 className="img-profile rounded-circle"
-                src="img/undraw_profile.svg"
+                // src="img/undraw_profile.svg"
+                src={
+                  userAuth.profile ? userAuth.profile : "img/undraw_profile.svg"
+                }
+                alt="user"
               />
             </a>
             {/* Dropdown - User Information */}
@@ -247,6 +260,10 @@ function Navbar() {
                 <i className="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>
                 Profile
               </a>
+              <NavLink className="dropdown-item" to="/update-password">
+                <i className="fas fa-key fa-sm fa-fw mr-2 text-gray-400"></i>
+                Update Password
+              </NavLink>
               <a className="dropdown-item" href="#">
                 <i className="fas fa-cogs fa-sm fa-fw mr-2 text-gray-400"></i>
                 Settings

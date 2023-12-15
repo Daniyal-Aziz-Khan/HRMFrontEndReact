@@ -32,6 +32,32 @@ export const postLogin = createAsyncThunk(
   }
 );
 
+export const postCompanyLogin = createAsyncThunk(
+  "user/postCompanyLogin",
+  async (userData, { rejectWithValue, getState, dispatch }) => {
+    const config = {
+      headers: {
+        "Content-Type": "application/json",
+      },
+    };
+    try {
+      const response = await axios.post(
+        `${baseUrl}Auth/PostCompanyLogin`,
+        userData,
+        config
+      );
+      const responseBack = getResponse(response, dispatch);
+      if (!responseBack && responseBack === undefined) {
+        return responseBack;
+      }
+      localStorage.setItem("userInfo", JSON.stringify(responseBack));
+      return responseBack;
+    } catch (error) {
+      handleApiError(error, dispatch);
+    }
+  }
+);
+
 export const logoutAction = createAsyncThunk(
   "/user/logout",
   async (payload, { rejectWithValue, getState, dispatch }) => {
@@ -221,6 +247,30 @@ const authSlices = createSlice({
       state.appStatusCode = action.payload?.statusCode || null;
     });
     builder.addCase(postLogin.rejected, (state, action) => {
+      state.appErr = action.payload?.message || null;
+      state.serverErr =
+        action.error?.message || "An error occurred on the server.";
+      state.appStatus = action.payload?.status || null;
+      state.appStatusCode = action.payload?.statusCode || null;
+      state.loading = false;
+    });
+    // company login
+    builder.addCase(postCompanyLogin.pending, (state, action) => {
+      state.appErr = undefined;
+      state.loading = true;
+      state.serverErr = undefined;
+      state.appStatus = action.payload?.status || null;
+      state.appStatusCode = action.payload?.statusCode || null;
+    });
+    builder.addCase(postCompanyLogin.fulfilled, (state, action) => {
+      state.userAuth = action?.payload;
+      state.appErr = undefined;
+      state.loading = false;
+      state.serverErr = undefined;
+      state.appStatus = action.payload?.status || null;
+      state.appStatusCode = action.payload?.statusCode || null;
+    });
+    builder.addCase(postCompanyLogin.rejected, (state, action) => {
       state.appErr = action.payload?.message || null;
       state.serverErr =
         action.error?.message || "An error occurred on the server.";

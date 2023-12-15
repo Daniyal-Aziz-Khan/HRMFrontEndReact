@@ -16,6 +16,7 @@ import UserList from "../ManageUser/UserList";
 import Login from "../Login/Login";
 import Register from "../Register/Register";
 import ForgotPassword from "../ForgotPassword/ForgotPassword";
+import AdminLogin from "../Login/AdminLogin";
 
 // layouts
 import RootLayout from "../layouts/rootLayout";
@@ -27,6 +28,7 @@ const getRouter = createBrowserRouter(
     <>
       <Route element={<AuthLayout />}>
         <Route path="/" element={<Login />} />
+        <Route path="adminlogin" element={<AdminLogin />} />
         <Route path="register" element={<Register />} />
         <Route path="forgot-password" element={<ForgotPassword />} />
       </Route>

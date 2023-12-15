@@ -291,8 +291,8 @@ export const addUser = createAsyncThunk(
     formData.append("primaryContact", users.phoneNumber);
     formData.append("password", users.password);
     formData.append("address", users.address);
-    formData.append("gender", users.gender);
-    formData.append("role", 3);
+    formData.append("gender", parseInt(users.gender));
+    formData.append("role", users.role);
     formData.append("dob", users.dob);
     formData.append("employeeId", users.employeeId);
     formData.append("companyId", users.companyId);

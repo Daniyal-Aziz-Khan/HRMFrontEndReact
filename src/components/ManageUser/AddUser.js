@@ -1,5 +1,5 @@
 import { useFormik } from "formik";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { NavLink, useLocation } from "react-router-dom";
 import { addUser, companyListDropdown } from "../redux/AdminController";
 import * as Yup from "yup";
@@ -7,11 +7,14 @@ import { useEffect, useRef, useState } from "react";
 import defaultImageSrc from "../../assets/images/users/user1.jpg";
 import defaultImageCNICSrc from "../../assets/images/users/defaultImageCNICSrc.jpg";
 import Spinner from "react-bootstrap/Spinner";
+import { GetRolesDropdown } from "./GetRolesDropdown";
 
 function AddUser() {
   const dispatch = useDispatch();
+  const { userAuth } = useSelector((state) => state.authentication);
   const location = useLocation();
   const [isUpdateCall, setIsUpdate] = useState(false);
+  const [rolesDropdown, setRolesDropdown] = useState([]);
 
   //#region fetch compnay list
   const [showSpinner, setShowSpinner] = useState(true);
@@ -42,6 +45,12 @@ function AddUser() {
 
   useEffect(() => {
     fetchCompaniesList();
+    const roles = GetRolesDropdown(userAuth.role);
+    if (userAuth && userAuth.role) {
+      setRolesDropdown(roles);
+    } else {
+      setRolesDropdown([]);
+    }
   }, []);
   //#endregion
 
@@ -54,7 +63,7 @@ function AddUser() {
   const initialValues = {
     companyId: getRecord?.companyId || "",
     id: getRecord?.id || "",
-    role: getRecord?.role || 3,
+    role: getRecord?.role || "",
     firstName: getRecord?.firstName || "",
     lastName: getRecord?.lastName || "",
     userName: getRecord?.userName || "",
@@ -74,6 +83,7 @@ function AddUser() {
 
   const validateAddUser = Yup.object().shape({
     isUpdate: Yup.bool().required(),
+    role: Yup.string().required("Please select role"),
     companyId: Yup.string().required("Please select company"),
     firstName: Yup.string().min(3).required("Please enter first name"),
     lastName: Yup.string().min(3).required("Please enter last name"),
@@ -307,6 +317,37 @@ function AddUser() {
                           <small className="text-danger">
                             {errors.companyId}
                           </small>
+                        )}
+                      </div>
+
+                      <div className="form-group col-lg-12">
+                        <label
+                          className="form-label ml-1 text-bold"
+                          htmlFor="exampleInputSRole"
+                        >
+                          Select Role
+                        </label>
+                        <select
+                          disabled={isUpdateCall}
+                          className="form-control"
+                          id="exampleInputSRole"
+                          value={values.role}
+                          onBlur={handleBlur("role")}
+                          onChange={handleChange("role")}
+                        >
+                          {rolesDropdown &&
+                            rolesDropdown.map((item) => (
+                              <option
+                                key={item.id}
+                                value={item.id}
+                                selected={values.id === item.id}
+                              >
+                                {item.roleName}
+                              </option>
+                            ))}
+                        </select>
+                        {errors.role && (
+                          <small className="text-danger">{errors.role}</small>
                         )}
                       </div>
 
